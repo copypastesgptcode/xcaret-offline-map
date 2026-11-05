@@ -82,6 +82,7 @@ function fmtDist(m){ return m<1000 ? Math.round(m)+' m' : (m/1000).toFixed(m<100
 
 /* ---------------- map / basemap ---------------- */
 const STYLE = {
+  sea:      {fill:'--water', line:'--water', w:0, fo:1},
   water:    {fill:'--water', line:'--water-deep', w:1, fo:1},
   pool:     {fill:'--pool', line:'--water-deep', w:1, fo:1},
   waterway: {line:'--water-deep', w:3, fo:0},
