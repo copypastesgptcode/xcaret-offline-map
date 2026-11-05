@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
+<meta name="theme-color" content="#1E2A2B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Xcaret Map">
+<title>Xcaret Map</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div id="map" aria-label="Map"></div>
+
+<!-- Top card -->
+<div id="topcard" class="card">
+  <div class="row1">
+    <div class="titlewrap">
+      <h1 id="areaTitle">Hotel Xcaret Arte</h1>
+      <div id="offline" class="offline" title="Offline status"><span class="dot"></span><span id="offlineText">Checking…</span></div>
+    </div>
+    <button id="themeBtn" class="iconbtn" aria-label="Theme" title="Light / Dark / Sun">◐</button>
+  </div>
+
+  <div class="switcher" id="switcher" role="tablist"></div>
+
+  <div class="searchwrap">
+    <input id="search" type="search" placeholder="Search places…" autocomplete="off" enterkeyhint="search" aria-label="Search places">
+    <button id="searchClear" class="searchclear" aria-label="Clear search" hidden>×</button>
+  </div>
+
+  <div class="chips" id="chips"></div>
+</div>
+
+<!-- Locate button -->
+<button id="locateBtn" class="fab" aria-label="Show my location" title="My location">◎</button>
+
+<!-- Bottom sheet -->
+<div id="sheet" class="sheet" aria-hidden="true">
+  <div class="grabber" id="grabber"></div>
+  <div class="sheetbody" id="sheetbody"></div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script src="js/app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW reg failed', e));
+  });
+}
+</script>
+</body>
+</html>
