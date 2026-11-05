@@ -94,4 +94,5 @@ Branch `claude/parks-data`, continuing from `467d288`. Parks only; Arte/México 
 
 ### Verification / next
 - Verified in the desktop browser pane at mobile width: Xplor shows three distinct green zones; venue sheet shows the desc card (e.g. Stalactite River → "Paddle a raft by hand through a flooded cave of stalactites"). Data + parks-local JS/CSS only.
-- Untested: on-device (Pixel) — desc text + zone colors in daylight/dark, offline reload. Zone shapes/greens are decorative and easy to retune if Dave wants crisper separation or labels.
+- **Verified on Pixel 7 (Android Chrome, localhost over USB `adb reverse`):** Xplor's three zone tints are distinguishable in both light and dark themes; the desc card renders and is readable in both. Offline test passed — removed the port forward, cold-killed Chrome, relaunched: the app loaded fully from the `v14` service-worker cache, switched to Xplor (zones present), and opened a venue with its description. Confirms the new data.json/basemap are cached and work offline. Theme + USB forward restored/removed after.
+- Zone shapes/greens are decorative and easy to retune if Dave wants crisper separation or labels.
