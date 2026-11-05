@@ -1,5 +1,5 @@
 /* Xcaret Map service worker — precache everything for full offline use. */
-const CACHE = 'xcaret-map-v4';
+const CACHE = 'xcaret-map-v6';
 const ASSETS = [
   './',
   'index.html',
@@ -29,7 +29,7 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('xcaret-map-v') && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });

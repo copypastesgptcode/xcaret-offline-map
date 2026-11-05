@@ -128,7 +128,9 @@ function pathStyle(cls, which){
 function renderBasemap(){
   if(baseLayer) baseLayer.remove();
   if(pathLayer) pathLayer.remove();
-  const feats = state.basemap.features.filter(f=> f.properties.area===state.area || f.properties.area==='other');
+  const area = state.data.areas.find(a=>a.id===state.area);
+  const geometryArea = area.basemap_area || area.id;
+  const feats = state.basemap.features.filter(f=> f.properties.area===geometryArea || f.properties.area==='other');
   const paths = feats.filter(f=> isPath(f.properties.cls));
   const rest  = feats.filter(f=> !isPath(f.properties.cls));
   const R = L.svg({padding:1});
@@ -160,7 +162,7 @@ function visibleVenues(){
     if(v.area!==state.area) return false;
     if(!state.active.has(v.cat)) return false;
     if(state.openNow && statusOf(v).s!=='open') return false;
-    if(q && !((v.name_en||'').toLowerCase().includes(q) || (v.name_es||'').toLowerCase().includes(q))) return false;
+    if(q && ![v.name_en,v.name_es,...(v.aliases||[])].some(name=>name && name.toLowerCase().includes(q))) return false;
     return true;
   });
 }
@@ -176,7 +178,7 @@ function renderPins(){
     m.on('dragend', ev=>{
       const ll=ev.target.getLatLng();
       state.edits[v.id] = Object.assign({}, state.edits[v.id], {lat:+ll.lat.toFixed(6), lon:+ll.lng.toFixed(6)});
-      saveEdits(); toast('Pin moved & saved'); if(state.selected===v.id) openSheet(v.id);
+      saveEdits(); toast('Pin moved & saved'); if(state.selected===v.id && !state.editing) openSheet(v.id);
     });
     pinLayer.addLayer(m);
     if(state.editing && sel) m.dragging && m.dragging.enable();
@@ -217,7 +219,7 @@ function distHtml(v){
   const m = haversine([state.pos[0],state.pos[1]],[v.lat,v.lon]);
   let a = bearing([state.pos[0],state.pos[1]],[v.lat,v.lon]);
   if(state.heading!=null) a = a - state.heading;
-  return `<div class="badge">↕ ${fmtDist(m)} <span class="arrow" style="transform:rotate(${a}deg)">↑</span></div>`;
+  return `<div class="badge">Direct · ${fmtDist(m)} <span class="arrow" style="transform:rotate(${a}deg)">↑</span></div>`;
 }
 function openSheet(id){
   const v = venueView(state.data.venues.find(x=>x.id===id));
@@ -231,16 +233,18 @@ function openSheet(id){
     <h2>${c.ic} ${esc(v.name_en)}</h2>
     <p class="es">${esc(v.name_es||'')} · ${esc(c.label)}${v.notes&&/México side/.test(v.notes)?' · Hotel México side':''}</p>
     <div class="badges">${statusBadge(v)} ${levelBadge} ${casaBadge} ${sur} ${distHtml(v)}</div>
+    ${v.loc==='approx'?'<div class="notes">Approximate pin location</div>':''}
     ${hoursHtml(v)}
     ${confFlag(v)}
     ${v.notes?`<div class="notes">${esc(v.notes)}</div>`:''}
     <div class="sheetbtns">
-      <button class="btn primary" id="navBtn">➤ Point me there</button>
+      <button class="btn primary" id="navBtn">➤ Compass bearing</button>
       <button class="btn ghost" id="editBtn">✎ Edit pin</button>
     </div>
-    <div id="editArea"></div>`;
+    <div id="editArea"></div>
+    ${v.arrivalNote ? '<p class="notes"><strong>My arrival note</strong><br>'+esc(v.arrivalNote)+'</p>' : ''}`;
   sheet.classList.add('open'); sheet.setAttribute('aria-hidden','false');
-  document.getElementById('navBtn').onclick=()=>{ state.navTarget=id; updateNavLine(); toast('Showing direction & distance'); openSheet(id); if(state.pos) fitUserAnd(v); };
+  document.getElementById('navBtn').onclick=()=>{ state.navTarget=id; updateNavLine(); if(!state.pos) startGPS(false); else toast('Showing straight-line bearing'); openSheet(id); if(state.pos) fitUserAnd(v); };
   document.getElementById('editBtn').onclick=()=>toggleEdit(id);
   if(state.editing) renderEditForm(id);
   if(state.navTarget===id && state.pos){
@@ -273,6 +277,8 @@ function renderEditForm(id){
   host.innerHTML=`<div class="edit">
     <label>Floor level badge (e.g. L1, L3, L5)</label>
     <input id="ed-level" value="${esc(v.level||'')}" placeholder="e.g. L3">
+    <label for="ed-note">My arrival note</label>
+    <input id="ed-note" value="${esc(v.arrivalNote||'')}" placeholder="Which entrance, bridge or elevator?">
     <label>Hours (24h). Drag the pin on the map to fix its position.</label>
     <div class="hoursedit" id="ed-hours">${rows}</div>
     <button class="addrow" id="ed-add">+ Add a time window</button>
@@ -295,7 +301,7 @@ function renderEditForm(id){
       const [lab,o,c]=r.querySelectorAll('input');
       return {label:lab.value.trim()||'Hours', open:o.value.trim(), close:c.value.trim()};
     }).filter(w=>/^\d{1,2}:\d{2}$/.test(w.open)&&/^\d{1,2}:\d{2}$/.test(w.close));
-    state.edits[id]=Object.assign({}, state.edits[id], {level:level||null, hours});
+    state.edits[id]=Object.assign({}, state.edits[id], {level:level||null, hours, arrivalNote:host.querySelector('#ed-note').value.trim()});
     saveEdits(); state.editing=false; toast('Saved on this device'); selectVenue(id,false);
   };
   host.querySelector('#ed-reset').onclick=()=>{ delete state.edits[id]; saveEdits(); state.editing=false; toast('Reset'); selectVenue(id,false); };
@@ -331,7 +337,7 @@ function onPos(p){
   const el=document.getElementById('ucone'); if(el) drawCone(el);
   updateNavLine();
   document.getElementById('locateBtn').classList.add('active');
-  if(state.selected) openSheet(state.selected);
+  if(state.selected && !state.editing) openSheet(state.selected);
 }
 function onPosErr(e){ toast('Location unavailable: '+(e.message||e.code)); document.getElementById('locateBtn').classList.remove('active'); }
 function startGPS(recenter){
@@ -404,13 +410,13 @@ function fitArea(a){
 /* ---------------- offline indicator ---------------- */
 async function updateOffline(){
   const el=document.getElementById('offline'), t=document.getElementById('offlineText');
-  let cached=false;
-  try{ const ks=await caches.keys(); cached = ks.some(k=>k.startsWith('xcaret-map')); }catch(e){}
-  const controlled = !!(navigator.serviceWorker && navigator.serviceWorker.controller);
-  if(cached && controlled){ el.className='offline ok'; t.textContent='Saved for offline'; }
-  else if(cached){ el.className='offline ok'; t.textContent='Saved for offline'; }
-  else { el.className='offline wait'; t.textContent='Saving for offline…'; }
-  if(!navigator.onLine){ t.textContent='Offline · using saved map'; el.className='offline ok'; }
+  const controlled = Boolean(navigator.serviceWorker?.controller);
+  el.className = 'offline ' + (controlled ? 'ok' : 'wait');
+  if(controlled){
+    t.textContent = navigator.onLine ? 'Saved for offline' : 'Offline · using saved map';
+  } else {
+    t.textContent = navigator.serviceWorker && navigator.onLine ? 'Preparing offline map…' : 'Offline copy unavailable';
+  }
 }
 
 /* ---------------- toast ---------------- */
@@ -425,6 +431,12 @@ async function init(){
     fetch('data/basemap.geojson').then(r=>r.json()),
   ]);
   state.data=d; state.basemap=b;
+  // Preserve field corrections saved under Cosexa's former venue ID.
+  if(state.edits['mx-apapachoa']){
+    state.edits['arte-cosexa'] = Object.assign({}, state.edits['mx-apapachoa'], state.edits['arte-cosexa']);
+    delete state.edits['mx-apapachoa'];
+    saveEdits();
+  }
 
   map = L.map('map', {zoomControl:true, attributionControl:true, minZoom:14, maxZoom:20, zoomSnap:.5, tap:true})
         .setView([20.5869,-87.1105], 17);
