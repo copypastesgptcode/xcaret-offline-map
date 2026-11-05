@@ -177,13 +177,32 @@ function visibleVenues(){
 function renderPins(){
   if(pinLayer) pinLayer.remove();
   pinLayer = L.layerGroup().addTo(map);
-  for(const v of visibleVenues()){
-    if(state.area==='arte' && ArteMap.hidePin(v)) continue;
+  const groups=new Map();
+  for(const venue of visibleVenues()){
+    if(state.area==='arte' && ArteMap.hidePin(venue)) continue;
+    const key=state.area==='arte' ? venue.lat+','+venue.lon : venue.id;
+    if(!groups.has(key)) groups.set(key,[]);
+    groups.get(key).push(venue);
+  }
+  for(const places of groups.values()){
+    const v=places.find(p=>p.id===state.selected) || places.find(p=>p.cat==='casa') || places[0];
+    const shared=places.length>1 && !(state.editing && v.id===state.selected);
     const sel = v.id===state.selected;
-    const m = L.marker([v.lat,v.lon], {icon:pinIcon(v,sel), draggable:false, keyboard:false, riseOnHover:true});
+    const m = L.marker([v.lat,v.lon], {icon:pinIcon(v,sel), draggable:false, keyboard:true, title:shared ? places.length+' places here' : v.name_en, riseOnHover:true});
     m._vid = v.id;
-    m.bindTooltip(v.name_en, {permanent:true, direction:'right', className:'pinlabel', offset:[10,-10]});
-    m.on('click', ()=> selectVenue(v.id, true));
+    m.bindTooltip(esc(v.name_en)+(shared ? ' · '+places.length+' places' : ''), {permanent:true, direction:'right', className:'pinlabel', offset:[10,-10]});
+    if(shared){
+      const list=document.createElement('div');list.className='arte-place-list';
+      for(const place of places){
+        const option=document.createElement('button');option.type='button';
+        option.textContent=CATS[place.cat].ic+' '+place.name_en;
+        option.onclick=()=>{map.closePopup();selectVenue(place.id,true);};
+        list.appendChild(option);
+      }
+      m.bindPopup(list,{className:'arte-place-popup',minWidth:155});
+    }else{
+      m.on('click', ()=> selectVenue(v.id,true));
+    }
     m.on('dragend', ev=>{
       const ll=ev.target.getLatLng();
       state.edits[v.id] = Object.assign({}, state.edits[v.id], {lat:+ll.lat.toFixed(6), lon:+ll.lng.toFixed(6)});
@@ -271,8 +290,7 @@ function closeSheet(){ const s=document.getElementById('sheet'); s.classList.rem
 /* ---------------- edit ---------------- */
 function toggleEdit(id){
   state.editing=!state.editing;
-  const m=markerFor(id);
-  if(m && m.dragging){ state.editing? m.dragging.enable() : m.dragging.disable(); }
+  renderPins();
   if(state.editing) toast('Drag the pin to move it');
   openSheet(id);
 }

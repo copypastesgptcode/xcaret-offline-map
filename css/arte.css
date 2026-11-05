@@ -45,3 +45,7 @@ body:not(.arte) .leaflet-control-scale{display:none}
 #arteGuide #guideStart{color:white;background:var(--ink)}
 #guideEvidence{color:var(--text-dim);font-size:13px}
 #guideSteps{padding-left:24px} #guideSteps li{padding:3px 0 8px 3px}
+
+.arte-place-popup .leaflet-popup-content-wrapper,.arte-place-popup .leaflet-popup-tip{background:var(--card)}
+.arte-place-list{display:grid;gap:2px}
+.arte-place-list button{min-height:44px;padding:6px 10px;border:0;border-radius:8px;background:var(--card-2);color:var(--text);text-align:left;font:600 14px Figtree,sans-serif;cursor:pointer}
