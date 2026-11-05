@@ -190,6 +190,7 @@ function renderPins(){
     const sel = v.id===state.selected;
     const m = L.marker([v.lat,v.lon], {icon:pinIcon(v,sel), draggable:false, keyboard:true, title:shared ? places.length+' places here' : v.name_en, riseOnHover:true});
     m._vid = v.id;
+    m._labelPriority=sel?0:v.cat==='casa'?1:2;
     m.bindTooltip(esc(v.name_en)+(shared ? ' · '+places.length+' places' : ''), {permanent:true, direction:'right', className:'pinlabel', offset:[10,-10]});
     if(shared){
       const list=document.createElement('div');list.className='arte-place-list';
@@ -212,6 +213,28 @@ function renderPins(){
     if(state.editing && sel) m.dragging && m.dragging.enable();
   }
   updateNavLine();
+  layoutArteLabels();
+}
+// Choose readable labels after Leaflet has positioned the icons. All markers stay interactive.
+let labelFrame;
+function layoutArteLabels(){
+  cancelAnimationFrame(labelFrame);
+  if(state.area!=='arte') return;
+  labelFrame=requestAnimationFrame(()=>{
+    if(state.area!=='arte' || !pinLayer) return;
+    const markers=pinLayer.getLayers().sort((a,b)=>a._labelPriority-b._labelPriority);
+    const icons=markers.map(m=>m.getElement().getBoundingClientRect());
+    const labels=[];
+    const overlaps=(a,b)=>a.left<b.right+2 && a.right>b.left-2 && a.top<b.bottom+1 && a.bottom>b.top-1;
+    markers.forEach((m,i)=>{
+      const label=m.getTooltip()?.getElement();
+      if(!label) return;
+      const rect=label.getBoundingClientRect();
+      const blocked=icons.some((icon,j)=>j!==i && overlaps(rect,icon)) || labels.some(l=>overlaps(rect,l));
+      label.style.visibility=blocked?'hidden':'';
+      if(!blocked) labels.push(rect);
+    });
+  });
 }
 function markerFor(id){ let r=null; if(pinLayer) pinLayer.eachLayer(l=>{ if(l._vid===id) r=l; }); return r; }
 
@@ -245,6 +268,7 @@ function hoursHtml(v){
 function distHtml(v){
   if(!state.pos) return '';
   const m = haversine([state.pos[0],state.pos[1]],[v.lat,v.lon]);
+  if(v.area==='arte' && m>10000 && state.navTarget!==v.id) return '';
   let a = bearing([state.pos[0],state.pos[1]],[v.lat,v.lon]);
   if(state.heading!=null) a = a - state.heading;
   return `<div class="badge">Direct · ${fmtDist(m)} <span class="arrow" style="transform:rotate(${a}deg)">↑</span></div>`;
@@ -256,16 +280,17 @@ function openSheet(id){
   const sheet=document.getElementById('sheet'), body=document.getElementById('sheetbody');
   const levelBadge = v.level ? `<span class="badge lvl">${esc(v.level)}</span>` : '';
   const casaBadge = v.casa ? `<span class="badge">🏠 ${esc(v.casa)}</span>` : '';
+  const casaCard=v.area==='arte' && v.cat==='casa';
   const sur = v.surcharge ? `<span class="badge">＄ Extra charge</span>` : '';
   body.innerHTML = `
     <h2>${c.ic} ${esc(v.name_en)}</h2>
-    <p class="es">${esc(v.name_es||'')} · ${esc(c.label)}${v.notes&&/México side/.test(v.notes)?' · Hotel México side':''}</p>
-    <div class="badges">${statusBadge(v)} ${levelBadge} ${casaBadge} ${sur} ${distHtml(v)}</div>
+    <p class="es">${v.name_es && v.name_es!==v.name_en ? esc(v.name_es)+' · ' : ''}${esc(c.label)}${v.notes&&/México side/.test(v.notes)?' · Hotel México side':''}</p>
+    <div class="badges">${casaCard?'':statusBadge(v)} ${levelBadge} ${casaBadge} ${sur} ${distHtml(v)}</div>
     ${v.loc==='approx'?'<div class="notes">Approximate pin location</div>':''}
     ${state.area==='arte' ? ArteMap.sheet(v) : ''}
-    ${hoursHtml(v)}
-    ${confFlag(v)}
-    ${v.notes?`<div class="notes">${esc(v.notes)}</div>`:''}
+    ${casaCard?'':hoursHtml(v)}
+    ${casaCard?'':confFlag(v)}
+    ${v.notes && !(casaCard && v.notes.startsWith('Building / wayfinding anchor'))?`<div class="notes">${esc(v.notes)}</div>`:''}
     <div class="sheetbtns">
       <button class="btn primary" id="navBtn">➤ Compass bearing</button>
       <button class="btn ghost" id="editBtn">✎ Edit pin</button>
@@ -484,6 +509,8 @@ async function init(){
         .setView([20.5869,-87.1105], 17);
   map.attributionControl.setPrefix('');
   map.attributionControl.addAttribution('© OpenStreetMap contributors');
+  map.on('moveend zoomend resize',layoutArteLabels);
+  document.fonts.ready.then(layoutArteLabels);
   map.on('zoomend', ()=>{ document.body.classList.toggle('labels-on', map.getZoom()>=17); });
 
   ArteMap.init(arte);

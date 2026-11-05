@@ -49,3 +49,25 @@ body:not(.arte) .leaflet-control-scale{display:none}
 .arte-place-popup .leaflet-popup-content-wrapper,.arte-place-popup .leaflet-popup-tip{background:var(--card)}
 .arte-place-list{display:grid;gap:2px}
 .arte-place-list button{min-height:44px;padding:6px 10px;border:0;border-radius:8px;background:var(--card-2);color:var(--text);text-align:left;font:600 14px Figtree,sans-serif;cursor:pointer}
+#mapMenu{display:none}
+.arte #mapMenu{display:block;flex:none;min-height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--card-2);color:var(--text);font:600 13px Figtree,sans-serif}
+.arte #topcard{padding:8px 10px;border-radius:17px}
+.arte .row1{border:0;padding:0;gap:5px}
+.arte .titlewrap{gap:9px}
+.arte #arteLogo{width:83px}
+.arte #themeBtn{width:42px;height:42px}
+.arte .offline{font-size:11px}
+.arte .searchwrap{margin-top:5px}
+.arte #search{height:40px}
+.arte:not(.arte-menu-open) :is(#switcher,#chips){display:none}
+.arte.arte-menu-open #chips{flex-wrap:wrap;overflow:auto;max-height:20dvh}
+.arte.arte-menu-open #switcher{flex-wrap:wrap}
+.arte .pinlabel{font:600 11px Figtree,sans-serif;color:var(--text);text-shadow:1px 1px 2px var(--card),-1px -1px 2px var(--card)}
+.arte-dock{display:flex;align-items:center;padding:4px;border-radius:25px;gap:3px;background:var(--card);box-shadow:var(--shadow)}
+#quickWalks,.arte-dock #artePaths{min-height:42px;border:none;box-shadow:none;border-radius:21px;padding:0 15px;font:700 14px Figtree,sans-serif;cursor:pointer}
+#quickWalks{background:var(--ink);color:#fff}
+.arte .sheet .badges:empty{display:none}
+.arte .sheet .arte-directions:has([data-walk-casa]){padding:0;border:0;background:transparent}
+.arte .sheet [data-walk-casa]{width:100%;text-align:left;border-radius:12px;background:var(--ink);color:white;padding:13px 15px}
+.arte .sheet:has([data-walk-casa]) #navBtn{background:var(--card-2);color:var(--text)}
+@media(max-width:355px){.arte .titlewrap{display:block}.arte #arteLogo{width:70px}}

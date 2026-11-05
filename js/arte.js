@@ -75,6 +75,11 @@ const ArteMap = (() => {
     casa.onchange=()=>{reverse=false;try{localStorage.setItem('arte_home_casa',casa.value);}catch{} render();};
     place.onchange=()=>{reverse=false;render();};
     el('guideReverse').onclick=()=>{reverse=!reverse;render();};
+    el('quickWalks').onclick=()=>el('arteGuides').click();
+    el('mapMenu').onclick=()=>{
+      const open=document.body.classList.toggle('arte-menu-open');
+      el('mapMenu').setAttribute('aria-expanded',String(open));
+    };
     el('arteGuides').onclick=()=>{render();dialog.showModal();};
     el('sheetbody').addEventListener('click',e=>{
       const button=e.target.closest('[data-walk-casa]');

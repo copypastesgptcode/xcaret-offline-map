@@ -1,5 +1,5 @@
 /* Xcaret Map service worker — precache everything for full offline use. */
-const CACHE = 'xcaret-map-v11-shared-places';
+const CACHE = 'xcaret-map-v12-arte-ui';
 const ASSETS = [
   './',
   'index.html',

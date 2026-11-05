@@ -25,6 +25,7 @@
       <h1 id="areaTitle">Hotel Xcaret Arte</h1>
       <div id="offline" class="offline" title="Offline status"><span class="dot"></span><span id="offlineText">Checking…</span></div>
     </div>
+    <button id="mapMenu" type="button" aria-expanded="false" aria-controls="switcher chips">Map options</button>
     <button id="themeBtn" class="iconbtn" aria-label="Theme" title="Light / Dark / Sun">◐</button>
   </div>
 
@@ -50,7 +51,7 @@
     <button type="button" id="arteForget" hidden>Clear saved walk</button>
     <small id="arteWalkStatus" role="status"></small>
   </div>
-  <button id="artePaths" type="button" aria-controls="arteKey" aria-pressed="false">Path view</button>
+  <div class="arte-dock"><button id="quickWalks" type="button">Walks</button><button id="artePaths" type="button" aria-controls="arteKey" aria-pressed="false">Path view</button></div>
 </div>
 <dialog id="arteGuide" aria-labelledby="guideTitle">
   <form method="dialog"><h2 id="guideTitle">Walks from my Casa</h2><button aria-label="Close walks">×</button></form>

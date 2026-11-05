@@ -58,3 +58,5 @@ Each recorded walk now has its own private localStorage key. Export a selected w
 QA: isolated mobile-sized desktop Edge, no phone. Tested Casa-pin entry, outbound and return guides, migration, multiple separate recordings with simulated fixes and a time gap, exported GPX XML/segments/timestamps, and saved walks and guides after stopping the server and reloading. On-site GPS, camera alignment and the actual resort junctions remain untested.
 
 Shared Arte pins (v11): Diseño / Rooftop Bar & Snack and Pirámide / Wet Bar each share exact coordinates. Filter first, then show one marker with a place picker per shared coordinate. Keep the venue coordinates and device edits independent. Tested both pairs at zoom 20, individual bar selection, edit dragging, a single search result and offline reload in desktop Edge.
+
+Arte UI v12: compact search header with Map options, one-tap Walks, collision-aware labels, and simplified Casa sheets. Desktop Edge 393 × 815: collapsed header measured 103 CSS pixels. Tested options, guides, Casa sheet with simulated distant location, sun mode, and offline guide reload. Physical Pixel check pending.
