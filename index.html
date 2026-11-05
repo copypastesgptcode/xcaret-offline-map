@@ -12,6 +12,7 @@
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/arte.css">
 </head>
 <body>
 <div id="map" aria-label="Map"></div>
@@ -20,6 +21,7 @@
 <div id="topcard" class="card">
   <div class="row1">
     <div class="titlewrap">
+      <img id="arteLogo" src="icons/arte-wordmark.png" alt="" width="104" height="37">
       <h1 id="areaTitle">Hotel Xcaret Arte</h1>
       <div id="offline" class="offline" title="Offline status"><span class="dot"></span><span id="offlineText">Checking…</span></div>
     </div>
@@ -36,6 +38,18 @@
   <div class="chips" id="chips"></div>
 </div>
 
+<div class="arte-tools">
+  <div id="arteKey" hidden>
+    <div class="arte-symbols"><span><i></i>Lagoon</span><span><i class="walk"></i>Footpath</span>
+    <span><i class="steps"></i>Steps</span><span><i class="possible"></i>Unconfirmed crossing</span>
+    <span><i class="service"></i>Service road</span></div>
+    <button type="button" id="arteMercado">Mercado ↔ lobby guide</button>
+    <button type="button" id="arteRecord">Record my walk</button>
+    <button type="button" id="arteForget" hidden>Clear saved walk</button>
+    <small id="arteWalkStatus" role="status"></small>
+  </div>
+  <button id="artePaths" type="button" aria-controls="arteKey" aria-pressed="false">Path view</button>
+</div>
 <!-- Locate button -->
 <button id="locateBtn" class="fab" aria-label="Show my location" title="My location">◎</button>
 
@@ -48,6 +62,8 @@
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script src="vendor/leaflet/leaflet.js"></script>
+<script src="js/arte-walk.js"></script>
+<script src="js/arte.js"></script>
 <script src="js/app.js"></script>
 <script>
 if ('serviceWorker' in navigator) {

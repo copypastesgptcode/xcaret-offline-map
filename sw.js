@@ -1,11 +1,16 @@
 /* Xcaret Map service worker — precache everything for full offline use. */
-const CACHE = 'xcaret-map-v6';
+const CACHE = 'xcaret-map-v8-arte';
 const ASSETS = [
   './',
   'index.html',
   'manifest.webmanifest',
   'css/styles.css',
   'js/app.js',
+  'js/arte.js',
+  'js/arte-walk.js',
+  'css/arte.css',
+  'data/arte-detail.geojson',
+  'icons/arte-wordmark.png',
   'vendor/leaflet/leaflet.js',
   'vendor/leaflet/leaflet.css',
   'fonts/figtree-400.woff2',

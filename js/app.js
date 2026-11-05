@@ -30,7 +30,7 @@ const state = {
   pos:null, heading:null, watchId:null, editing:false,
 };
 
-let map, baseLayer, pathLayer, pinLayer, navLine, userMarker, userCone;
+let map, basemapRenderer, baseLayer, pathLayer, pinLayer, navLine, userMarker, userCone;
 
 /* ---------------- storage ---------------- */
 function loadEdits(){ try{ return JSON.parse(localStorage.getItem(EDIT_KEY)||'{}'); }catch(e){ return {}; } }
@@ -105,7 +105,7 @@ const CSS_FALLBACK = {
 };
 // Never return empty (which would make Leaflet default to black/invisible) if a CSS var is missing.
 function cssv(name){
-  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const v = getComputedStyle(document.body).getPropertyValue(name).trim();
   return v || CSS_FALLBACK[name] || '#8a8a8a';
 }
 function styleFor(cls){
@@ -120,6 +120,9 @@ function styleFor(cls){
 function isPath(cls){ return cls==='path' || cls==='service'; }
 function pathStyle(cls, which){
   const svc = cls==='service';
+  if(svc && state.area==='arte'){
+    return {color:cssv('--arte-service'),weight:2,opacity:which==='casing'?0:.9,dashArray:'6 4',fill:false};
+  }
   if(which==='casing')
     return {color:cssv('--path-casing'), weight:svc?5:6.5, opacity:.95, lineCap:'round', lineJoin:'round', fill:false};
   return {color:cssv('--path'), weight:svc?2.5:3.6, opacity:1, lineCap:'round', lineJoin:'round', fill:false,
@@ -128,22 +131,27 @@ function pathStyle(cls, which){
 function renderBasemap(){
   if(baseLayer) baseLayer.remove();
   if(pathLayer) pathLayer.remove();
+  ArteMap.sync();
   const area = state.data.areas.find(a=>a.id===state.area);
   const geometryArea = area.basemap_area || area.id;
-  const feats = state.basemap.features.filter(f=> f.properties.area===geometryArea || f.properties.area==='other');
+  const feats = state.basemap.features.filter(f=> (f.properties.area===geometryArea || f.properties.area==='other') && (state.area!=='arte' || !ArteMap.replaces(f)));
   const paths = feats.filter(f=> isPath(f.properties.cls));
   const rest  = feats.filter(f=> !isPath(f.properties.cls));
-  const R = L.svg({padding:1});
+  if(state.area==='arte') rest.sort((a,b)=>ArteMap.drawOrder(a)-ArteMap.drawOrder(b));
+  const R = basemapRenderer || (basemapRenderer=L.svg({padding:.4}));
   baseLayer = L.geoJSON({type:'FeatureCollection',features:rest}, {
     style:f=>styleFor(f.properties.cls), interactive:false, renderer:R,
   }).addTo(map);
+  if(state.area==='arte') ArteMap.drawWater(R,baseLayer);
   // Walkways: a dark casing pass, then a bright fill pass on top — crisp and readable.
   pathLayer = L.layerGroup().addTo(map);
   pathLayer.addLayer(L.geoJSON({type:'FeatureCollection',features:paths}, {
     style:f=>pathStyle(f.properties.cls,'casing'), interactive:false, renderer:R }));
   pathLayer.addLayer(L.geoJSON({type:'FeatureCollection',features:paths}, {
     style:f=>pathStyle(f.properties.cls,'top'), interactive:false, renderer:R }));
-  baseLayer.bringToBack();
+  if(state.area==='arte') ArteMap.draw(R,pathLayer);
+  if(state.area!=='arte') baseLayer.bringToBack();
+  ArteWalk.draw();
 }
 
 /* ---------------- pins ---------------- */
@@ -170,6 +178,7 @@ function renderPins(){
   if(pinLayer) pinLayer.remove();
   pinLayer = L.layerGroup().addTo(map);
   for(const v of visibleVenues()){
+    if(state.area==='arte' && ArteMap.hidePin(v)) continue;
     const sel = v.id===state.selected;
     const m = L.marker([v.lat,v.lon], {icon:pinIcon(v,sel), draggable:false, keyboard:false, riseOnHover:true});
     m._vid = v.id;
@@ -234,6 +243,7 @@ function openSheet(id){
     <p class="es">${esc(v.name_es||'')} · ${esc(c.label)}${v.notes&&/México side/.test(v.notes)?' · Hotel México side':''}</p>
     <div class="badges">${statusBadge(v)} ${levelBadge} ${casaBadge} ${sur} ${distHtml(v)}</div>
     ${v.loc==='approx'?'<div class="notes">Approximate pin location</div>':''}
+    ${state.area==='arte' ? ArteMap.sheet(v) : ''}
     ${hoursHtml(v)}
     ${confFlag(v)}
     ${v.notes?`<div class="notes">${esc(v.notes)}</div>`:''}
@@ -243,6 +253,8 @@ function openSheet(id){
     </div>
     <div id="editArea"></div>
     ${v.arrivalNote ? '<p class="notes"><strong>My arrival note</strong><br>'+esc(v.arrivalNote)+'</p>' : ''}`;
+  const destination = body.querySelector('[data-arte-destination]');
+  if(destination) destination.onclick=()=>selectVenue(destination.dataset.arteDestination,true);
   sheet.classList.add('open'); sheet.setAttribute('aria-hidden','false');
   document.getElementById('navBtn').onclick=()=>{ state.navTarget=id; updateNavLine(); if(!state.pos) startGPS(false); else toast('Showing straight-line bearing'); openSheet(id); if(state.pos) fitUserAnd(v); };
   document.getElementById('editBtn').onclick=()=>toggleEdit(id);
@@ -331,6 +343,7 @@ function drawCone(el){
 }
 function onPos(p){
   state.pos=[p.coords.latitude, p.coords.longitude];
+  ArteWalk.fix(p);
   ensureUser();
   if(!map.hasLayer(userMarker)) userMarker.addTo(map);
   userMarker.setLatLng(state.pos);
@@ -339,7 +352,11 @@ function onPos(p){
   document.getElementById('locateBtn').classList.add('active');
   if(state.selected && !state.editing) openSheet(state.selected);
 }
-function onPosErr(e){ toast('Location unavailable: '+(e.message||e.code)); document.getElementById('locateBtn').classList.remove('active'); }
+function onPosErr(e){ if(e.code===1){
+    if(state.watchId!=null) navigator.geolocation.clearWatch(state.watchId);
+    state.watchId=null; ArteWalk.stop();
+  }
+  toast('Location unavailable: '+(e.message||e.code)); document.getElementById('locateBtn').classList.remove('active'); }
 function startGPS(recenter){
   if(!('geolocation' in navigator)){ toast('No geolocation on this device'); return; }
   requestOrientation();
@@ -392,6 +409,7 @@ function buildChips(){
   }
 }
 function switchArea(id){
+  ArteWalk.stop();
   state.area=id; state.selected=null; state.navTarget=null;
   closeSheet(); buildSwitcher(); renderBasemap(); renderPins();
   const a=state.data.areas.find(x=>x.id===id);
@@ -400,6 +418,11 @@ function switchArea(id){
   toast(a.hours_note, 4200);
 }
 function fitArea(a){
+  if(a.id==='arte'){
+    const casas=allVenues().filter(v=>v.area==='arte' && (v.cat==='casa' || v.id==='arte-lobby'));
+    map.fitBounds(casas.map(v=>[v.lat,v.lon]), {paddingTopLeft:[35,document.getElementById('topcard').offsetHeight+18],paddingBottomRight:[42,85],maxZoom:18});
+    return;
+  }
   // fit to this area's venues + basemap features
   const pts=[];
   allVenues().forEach(v=>{ if(v.area===a.id) pts.push([v.lat,v.lon]); });
@@ -426,9 +449,10 @@ function toast(msg, ms){ if(!msg) return; const el=document.getElementById('toas
 /* ---------------- init ---------------- */
 async function init(){
   setTheme(getTheme());
-  const [d,b] = await Promise.all([
+  const [d,b,arte] = await Promise.all([
     fetch('data/data.json').then(r=>r.json()),
     fetch('data/basemap.geojson').then(r=>r.json()),
+    fetch('data/arte-detail.geojson').then(r=>r.json()),
   ]);
   state.data=d; state.basemap=b;
   // Preserve field corrections saved under Cosexa's former venue ID.
@@ -444,6 +468,7 @@ async function init(){
   map.attributionControl.addAttribution('© OpenStreetMap contributors');
   map.on('zoomend', ()=>{ document.body.classList.toggle('labels-on', map.getZoom()>=17); });
 
+  ArteMap.init(arte);
   buildSwitcher(); buildChips();
   renderBasemap(); renderPins();
   const a=state.data.areas.find(x=>x.id===state.area);
