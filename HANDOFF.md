@@ -41,3 +41,18 @@ Codex worked in the separate `codex/arte-visuals` worktree based on 3b88cdb. The
 
 ### QA and next session
 Desktop Edge at a 393 × 815 mobile viewport, simulated location, Arte/México/park switching, route cards, path symbols, cache and saved walk. Actual Pixel testing of this release is deferred until Dave reconnects it. On the phone, check day/sun contrast, try record → finish → offline reload, check the lobby/Mercado elevator, and compare the three dotted spans with guest-access signs. Claude can keep park edits in separate files and retain the new Arte assets when merging changes to the service-worker precache.
+
+## Casa walks · 2026-11-05
+
+Branch `codex/arte-visuals`, based on published e2a77e9. Release cache v10-walks. Path view and the two home Casa pins now open outbound and return landmark guides. Música and Pirámide each cover Mercado, the main lobby, Cayuco, and Cosexa. Pirámide also covers the Xaak-side bridge to the base of Xpiral. These are assembled itineraries, not surveyed polylines; do not join Casa centers or extrapolate bridge access. The approaches, intermediate forks and entrances still need verification with Dave's tracks and camera clips.
+
+Evidence reviewed November 5:
+- Hotel Casa/venue associations: https://www.hotelxcaretarte.com/en/casas/
+- Level 3 pedestrian walkway, level 5 lobby and Mercado elevators: https://www.reddit.com/r/Xcaret/comments/18u2y81/ and https://www.atastefortravel.ca/24213-hotel-xcaret-arte-review/
+- Mercado arrival landmark: https://mesanotes.com/hotel-xcaret-arte/restaurants/mercado-de-san-juan
+- Xaak crossing to the chapel base: https://www.reddit.com/r/Xcaret/comments/1kngp3v/
+- Cosexa guest elevator: https://www.reddit.com/r/Xcaret/comments/1sdo7f9/xcaret_arte_long_review_and_tips_air_canada/
+
+Each recorded walk now has its own private localStorage key. Export a selected walk as GPX and pair it with the original camera clips. New points include timestamps. Legacy points retain geometry without invented timestamps. The saved trail from v8 migrates on the same browser origin. Keep the map visible during capture. The next geometry pass should reconcile each user-supplied GPX segment with camera evidence, especially floor transitions and canopy gaps.
+
+QA: isolated mobile-sized desktop Edge, no phone. Tested Casa-pin entry, outbound and return guides, migration, multiple separate recordings with simulated fixes and a time gap, exported GPX XML/segments/timestamps, and saved walks and guides after stopping the server and reloading. On-site GPS, camera alignment and the actual resort junctions remain untested.

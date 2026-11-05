@@ -16,7 +16,7 @@ body.arte{--arte-service:#706956;--ink:#562557;--jungle:#b8c5a8;--building:#f4e9
 #arteKey span{display:flex;align-items:center;gap:9px;margin:4px 0}
 #arteKey i{width:26px;height:0;border-top:4px solid var(--water-deep)}
 #arteKey .walk{height:5px;border:1px solid var(--path-casing);background:var(--path)}
-#arteMercado,#arteRecord,#arteForget{display:inline-block;text-align:left;min-height:40px;padding:4px 6px;background:transparent;border:0;color:var(--text);text-decoration:underline;font:inherit;cursor:pointer}
+#arteGuides,#arteRecord,#arteExport,#arteForget{display:inline-block;text-align:left;min-height:40px;padding:4px 6px;background:transparent;border:0;color:var(--text);text-decoration:underline;font:inherit;cursor:pointer}
 #arteKey .steps{border-color:var(--arte-step);border-top-style:dashed}
 #arteKey .possible{border-color:var(--arte-crossing);border-top-style:dotted}
 .arte-directions{border-left:3px solid #993975;padding:7px 12px;margin:12px 0;background:var(--card-2);border-radius:0 8px 8px 0}
@@ -32,3 +32,16 @@ body:not(.arte) .leaflet-control-scale{display:none}
 #arteKey{width:min(290px,82vw);padding:8px 12px}
 .arte-symbols{display:grid;grid-template-columns:1fr 1.45fr;gap:0 8px;font-size:12px}
 #arteKey .service{border-color:var(--arte-service);border-top:2px dashed var(--arte-service)}
+
+#arteKey{max-height:55dvh;overflow:auto}
+#arteKey [hidden]{display:none}
+#arteSavedLabel,#arteGuide label{display:block;margin-top:8px}
+#arteSaved,#arteGuide select{display:block;width:100%;margin:4px 0;padding:8px;border:1px solid var(--line);border-radius:8px;color:var(--text);background:var(--card-2);font:inherit}
+#arteGuide{width:min(420px,94vw);max-height:85dvh;overflow:auto;border:0;border-radius:18px;padding:18px;color:var(--text);background:var(--card);font:15px/1.45 Figtree,sans-serif}
+#arteGuide::backdrop{background:#142b2b88}
+#arteGuide form,#arteGuide>div{display:flex;gap:8px;align-items:center;justify-content:space-between}
+#arteGuide h2{margin:0;font-size:20px}
+#arteGuide button{padding:9px 12px;min-height:42px;border:1px solid var(--line);border-radius:10px;font:inherit;color:var(--text);background:var(--card-2)}
+#arteGuide #guideStart{color:white;background:var(--ink)}
+#guideEvidence{color:var(--text-dim);font-size:13px}
+#guideSteps{padding-left:24px} #guideSteps li{padding:3px 0 8px 3px}

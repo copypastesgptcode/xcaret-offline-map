@@ -43,13 +43,22 @@
     <div class="arte-symbols"><span><i></i>Lagoon</span><span><i class="walk"></i>Footpath</span>
     <span><i class="steps"></i>Steps</span><span><i class="possible"></i>Unconfirmed crossing</span>
     <span><i class="service"></i>Service road</span></div>
-    <button type="button" id="arteMercado">Mercado ↔ lobby guide</button>
+    <button type="button" id="arteGuides">Walks from my Casa</button>
+    <label id="arteSavedLabel" hidden>Saved walk <select id="arteSaved"></select></label>
     <button type="button" id="arteRecord">Record my walk</button>
+    <button type="button" id="arteExport" hidden>Download GPX</button>
     <button type="button" id="arteForget" hidden>Clear saved walk</button>
     <small id="arteWalkStatus" role="status"></small>
   </div>
   <button id="artePaths" type="button" aria-controls="arteKey" aria-pressed="false">Path view</button>
 </div>
+<dialog id="arteGuide" aria-labelledby="guideTitle">
+  <form method="dialog"><h2 id="guideTitle">Walks from my Casa</h2><button aria-label="Close walks">×</button></form>
+  <label>Starting Casa<select id="guideCasa"><option value="musica">Casa de la Música</option><option value="piramide">Casa de la Pirámide</option></select></label>
+  <label>Walk to<select id="guidePlace"></select></label>
+  <p id="guideEvidence"></p><ol id="guideSteps"></ol>
+  <div><button id="guideReverse" type="button">Show return walk</button><button id="guideStart" type="button">Record this walk</button></div>
+</dialog>
 <!-- Locate button -->
 <button id="locateBtn" class="fab" aria-label="Show my location" title="My location">◎</button>
 
