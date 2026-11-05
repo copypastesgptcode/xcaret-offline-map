@@ -1,5 +1,5 @@
 /* Xcaret Map service worker — precache everything for full offline use. */
-const CACHE = 'xcaret-map-v1';
+const CACHE = 'xcaret-map-v2';
 const ASSETS = [
   './',
   'index.html',
@@ -44,6 +44,17 @@ self.addEventListener('fetch', (e) => {
   if (req.mode === 'navigate') {
     e.respondWith(
       fetch(req).catch(() => caches.match('index.html').then((r) => r || caches.match('./')))
+    );
+    return;
+  }
+
+  // Data files: network-first so edits propagate when online; fall back to cache offline.
+  if (/\/data\/.*\.(json|geojson)$/.test(url.pathname)) {
+    e.respondWith(
+      fetch(req).then((res) => {
+        if (res && res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
+        return res;
+      }).catch(() => caches.match(req))
     );
     return;
   }
