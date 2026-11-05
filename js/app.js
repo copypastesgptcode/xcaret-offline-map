@@ -97,7 +97,17 @@ const STYLE = {
   coastline:{line:'--water-deep', w:2, fo:0},
   wall:     {line:'--building-line', w:1.5, fo:0},
 };
-function cssv(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+const CSS_FALLBACK = {
+  '--path':'#FBF2DC','--path-casing':'#A98B55','--water':'#59C7D6','--water-deep':'#2FA8C0',
+  '--pool':'#6FD3E0','--sand':'#E9DCC4','--sand-line':'#d8c7a6','--jungle':'#7FB27A',
+  '--jungle-deep':'#5E9E67','--building':'#efe9df','--building-line':'#d8cdba','--ink':'#1E2A2B',
+  '--card-2':'#f4f6f5','--line':'#e4e8e7'
+};
+// Never return empty (which would make Leaflet default to black/invisible) if a CSS var is missing.
+function cssv(name){
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || CSS_FALLBACK[name] || '#8a8a8a';
+}
 function styleFor(cls){
   const s = STYLE[cls] || {line:'--line', w:1, fo:0};
   const st = {weight:s.w, opacity:.9};

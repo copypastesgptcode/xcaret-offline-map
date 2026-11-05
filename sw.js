@@ -1,5 +1,5 @@
 /* Xcaret Map service worker — precache everything for full offline use. */
-const CACHE = 'xcaret-map-v3';
+const CACHE = 'xcaret-map-v4';
 const ASSETS = [
   './',
   'index.html',
