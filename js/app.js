@@ -30,7 +30,7 @@ const state = {
   pos:null, heading:null, watchId:null, editing:false,
 };
 
-let map, baseLayer, pinLayer, navLine, userMarker, userCone;
+let map, baseLayer, pathLayer, pinLayer, navLine, userMarker, userCone;
 
 /* ---------------- storage ---------------- */
 function loadEdits(){ try{ return JSON.parse(localStorage.getItem(EDIT_KEY)||'{}'); }catch(e){ return {}; } }
@@ -107,14 +107,30 @@ function styleFor(cls){
   if(s.w===0) st.stroke=false;
   return st;
 }
+function isPath(cls){ return cls==='path' || cls==='service'; }
+function pathStyle(cls, which){
+  const svc = cls==='service';
+  if(which==='casing')
+    return {color:cssv('--path-casing'), weight:svc?5:6.5, opacity:.95, lineCap:'round', lineJoin:'round', fill:false};
+  return {color:cssv('--path'), weight:svc?2.5:3.6, opacity:1, lineCap:'round', lineJoin:'round', fill:false,
+          dashArray: svc?'1 7':null};
+}
 function renderBasemap(){
   if(baseLayer) baseLayer.remove();
+  if(pathLayer) pathLayer.remove();
   const feats = state.basemap.features.filter(f=> f.properties.area===state.area || f.properties.area==='other');
-  baseLayer = L.geoJSON({type:'FeatureCollection',features:feats}, {
-    style:f=>styleFor(f.properties.cls),
-    interactive:false,
-    renderer:L.svg({padding:1}),
+  const paths = feats.filter(f=> isPath(f.properties.cls));
+  const rest  = feats.filter(f=> !isPath(f.properties.cls));
+  const R = L.svg({padding:1});
+  baseLayer = L.geoJSON({type:'FeatureCollection',features:rest}, {
+    style:f=>styleFor(f.properties.cls), interactive:false, renderer:R,
   }).addTo(map);
+  // Walkways: a dark casing pass, then a bright fill pass on top — crisp and readable.
+  pathLayer = L.layerGroup().addTo(map);
+  pathLayer.addLayer(L.geoJSON({type:'FeatureCollection',features:paths}, {
+    style:f=>pathStyle(f.properties.cls,'casing'), interactive:false, renderer:R }));
+  pathLayer.addLayer(L.geoJSON({type:'FeatureCollection',features:paths}, {
+    style:f=>pathStyle(f.properties.cls,'top'), interactive:false, renderer:R }));
   baseLayer.bringToBack();
 }
 

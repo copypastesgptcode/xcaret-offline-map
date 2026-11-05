@@ -14,6 +14,8 @@
   --text-dim:#6a7778;
   --sand:#E9DCC4;            /* paths */
   --sand-line:#d8c7a6;
+  --path:#FBF2DC;            /* walkway fill (bright) */
+  --path-casing:#A98B55;     /* walkway outline (contrast) */
   --jungle:#7FB27A;          /* vegetation base (map background) */
   --jungle-deep:#5E9E67;
   --water:#59C7D6;           /* turquoise */
@@ -34,6 +36,7 @@
 :root[data-theme="dark"]{
   --ink:#0f1718; --card:#1c2a2b; --card-2:#213233; --line:#2f4647; --text:#eaf2f1; --text-dim:#9fb3b2;
   --sand:#6b6350; --sand-line:#857a60; --jungle:#2e4a3a; --jungle-deep:#24412f;
+  --path:#E8DFC8; --path-casing:#8a7a4e;
   --water:#1f6f80; --water-deep:#14596a; --pool:#2b8ba0; --building:#2a3a3b; --building-line:#3c5253;
   --shadow:0 6px 24px rgba(0,0,0,.5);
 }
@@ -41,6 +44,7 @@
 :root[data-theme="sun"]{
   --ink:#000000; --card:#ffffff; --card-2:#ffffff; --line:#000000; --text:#000000; --text-dim:#1a1a1a;
   --sand:#F3E7CB; --sand-line:#000000; --jungle:#A7C79A; --jungle-deep:#6f9f6a;
+  --path:#FFFFFF; --path-casing:#000000;
   --water:#38C6DA; --water-deep:#007f95; --pool:#38C6DA; --building:#ffffff; --building-line:#000000;
   --shadow:0 0 0 2px #000, 0 6px 18px rgba(0,0,0,.35);
 }
