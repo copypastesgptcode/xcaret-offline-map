@@ -18,6 +18,9 @@
   --path-casing:#A98B55;     /* walkway outline (contrast) */
   --jungle:#7FB27A;          /* vegetation base (map background) */
   --jungle-deep:#5E9E67;
+  --xp-n:#9FD08A; --xp-n-l:#6fae5e;   /* Xplor zone tints (north/center/south) */
+  --xp-c:#DCE9BE; --xp-c-l:#b9cd8a;
+  --xp-s:#A6DCCB; --xp-s-l:#6cbca6;
   --water:#59C7D6;           /* turquoise */
   --water-deep:#2FA8C0;
   --pool:#6FD3E0;
@@ -121,6 +124,7 @@ h1{font-size:19px;font-weight:700;margin:0;line-height:1.15;color:var(--text);wh
 .sheetbody h2{font-size:22px;font-weight:700;margin:0 0 2px}
 .sheetbody .es{font-size:15px;color:var(--text-dim);margin:0 0 10px}
 .badges{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px;align-items:center}
+.desc{font-size:15px;line-height:1.5;color:var(--text);margin:0 0 12px;background:var(--card-2);border-radius:12px;padding:10px 12px}
 .badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:6px 10px;border-radius:999px;background:var(--card-2);color:var(--text)}
 .badge.open{background:#E3F6E8;color:#1b7a31}
 .badge.closed{background:#FBE4E0;color:#b23a22}

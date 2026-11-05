@@ -96,12 +96,18 @@ const STYLE = {
   service:  {line:'--sand-line', w:2, fo:0, dash:'1 5'},
   coastline:{line:'--water-deep', w:2, fo:0},
   wall:     {line:'--building-line', w:1.5, fo:0},
+  // Xplor area tints (schematic groupings, drawn under everything)
+  'xpzone-n':{fill:'--xp-n', line:'--xp-n-l', w:1, fo:.5},
+  'xpzone-c':{fill:'--xp-c', line:'--xp-c-l', w:1, fo:.5},
+  'xpzone-s':{fill:'--xp-s', line:'--xp-s-l', w:1, fo:.5},
 };
 const CSS_FALLBACK = {
   '--path':'#FBF2DC','--path-casing':'#A98B55','--water':'#59C7D6','--water-deep':'#2FA8C0',
   '--pool':'#6FD3E0','--sand':'#E9DCC4','--sand-line':'#d8c7a6','--jungle':'#7FB27A',
   '--jungle-deep':'#5E9E67','--building':'#efe9df','--building-line':'#d8cdba','--ink':'#1E2A2B',
-  '--card-2':'#f4f6f5','--line':'#e4e8e7'
+  '--card-2':'#f4f6f5','--line':'#e4e8e7',
+  '--xp-n':'#9FD08A','--xp-n-l':'#6fae5e','--xp-c':'#DCE9BE','--xp-c-l':'#b9cd8a',
+  '--xp-s':'#A6DCCB','--xp-s-l':'#6cbca6'
 };
 // Never return empty (which would make Leaflet default to black/invisible) if a CSS var is missing.
 function cssv(name){
@@ -286,6 +292,7 @@ function openSheet(id){
     <h2>${c.ic} ${esc(v.name_en)}</h2>
     <p class="es">${v.name_es && v.name_es!==v.name_en ? esc(v.name_es)+' · ' : ''}${esc(c.label)}${v.notes&&/México side/.test(v.notes)?' · Hotel México side':''}</p>
     <div class="badges">${casaCard?'':statusBadge(v)} ${levelBadge} ${casaBadge} ${sur} ${distHtml(v)}</div>
+    ${v.desc?`<p class="desc">${esc(v.desc)}</p>`:''}
     ${v.loc==='approx'?'<div class="notes">Approximate pin location</div>':''}
     ${state.area==='arte' ? ArteMap.sheet(v) : ''}
     ${casaCard?'':hoursHtml(v)}

@@ -79,3 +79,19 @@ Branch `claude/parks-info`, rebuilt on `505c860` (current main). Only `data/data
 - Verified rendering in the desktop browser pane only (Dave disconnected the Pixel): 5-destination switcher, Xenses pins now over the real structures with correct names, Xcaret 30 pins land on park land (not sea), park-hours/Sunday logic works. Data-only change, JS untouched.
 - Untested: on-device (Pixel) load + offline reload + GPS for the parks — deferred until Dave reconnects.
 - `data/data.json` is network-first, so park edits propagate without a cache bump; the v13 bump also forces a full re-cache on next SW update.
+
+## Park descriptions + Xplor zones · 2026-11-05 (Claude)
+
+Branch `claude/parks-data`, continuing from `467d288`. Parks only; Arte/México venues and all Arte code/assets untouched. SW cache bumped `v13-parks` → `v14-parks`.
+
+### What changed
+- Every park venue (Xcaret/Xplor/Xenses, 49 total) gained a short plain-English `desc` field — one sentence saying what the attraction is, so the Spanish names are understandable at a tap. Rendered as a tinted `.desc` card in the venue sheet, just under the badges. Generic: Arte venues have no `desc`, so their sheet is unchanged.
+- Xplor now shows three soft green **zone tints** so attractions read as grouped areas instead of a flat field of dots. Classes `xpzone-n/c/s` in `data/basemap.geojson` (area `xplor`), styled in `app.js` STYLE + `--xp-*` tokens (css + JS fallback). Zones are **schematic groupings of the approximate pins by proximity** (north = zip-lines/buggies, center = entrance/dining/splash, south = cave rivers), NOT surveyed boundaries. Drawn first → sit under buildings/paths/pins.
+
+### Files / scripts
+- `data/data.json` (desc on park venues), `data/basemap.geojson` (3 xpzone polygons prepended), `js/app.js` (desc render + STYLE/fallback), `css/styles.css` (`.desc` + `--xp-*` vars), `sw.js` (v14).
+- Rerunnable builders in scratchpad: `parks/add_desc.py` (id→desc map) and `parks/xplor_zones.py` (strips old `xpzone*` then regenerates). Both idempotent; safe to rerun on a fresh main for a clean merge.
+
+### Verification / next
+- Verified in the desktop browser pane at mobile width: Xplor shows three distinct green zones; venue sheet shows the desc card (e.g. Stalactite River → "Paddle a raft by hand through a flooded cave of stalactites"). Data + parks-local JS/CSS only.
+- Untested: on-device (Pixel) — desc text + zone colors in daylight/dark, offline reload. Zone shapes/greens are decorative and easy to retune if Dave wants crisper separation or labels.
