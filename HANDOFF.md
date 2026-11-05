@@ -60,3 +60,22 @@ QA: isolated mobile-sized desktop Edge, no phone. Tested Casa-pin entry, outboun
 Shared Arte pins (v11): Diseño / Rooftop Bar & Snack and Pirámide / Wet Bar each share exact coordinates. Filter first, then show one marker with a place picker per shared coordinate. Keep the venue coordinates and device edits independent. Tested both pairs at zoom 20, individual bar selection, edit dragging, a single search result and offline reload in desktop Edge.
 
 Arte UI v12: compact search header with Map options, one-tap Walks, collision-aware labels, and simplified Casa sheets. Desktop Edge 393 × 815: collapsed header measured 103 CSS pixels. Tested options, guides, Casa sheet with simulated distant location, sun mode, and offline guide reload. Physical Pixel check pending.
+
+## Park data · 2026-11-05 (Claude)
+
+Branch `claude/parks-info`, rebuilt on `505c860` (current main). Only `data/data.json` changed; Arte/México venues and all Arte code/assets left untouched. SW cache bumped `v12-arte-ui` → `v13-parks` (precached data.json changed); Codex's Arte assets retained in the precache list. Not deployed — awaiting Dave.
+
+### What changed (parks only)
+- Xcaret 15 → 30 pins: added Coral Reef Aquarium, Orchid/Mushroom farm, Jaguar Island, Sea Turtles, Scarlet Macaws, Caleta cove & beach, an underground-river entrance, Hill of the Chapel cemetery, Hacienda Henequenera, Folk Art Museum, two buffets (La Cocina, La Península), lockers, snorkel/life-jacket rental, first aid. Existing OSM-placed Xcaret pins kept (IDs and coords unchanged).
+- Xplor 8 → 9: completed the seven attractions + El Troglodita buffet, lockers, restroom. `closed_days:[0]` (Mon–Sat).
+- Xenses 7 → 10: corrected attraction names — the old guesses (Riviera, Lodoxpa, Tugit & Twister, Riverland) are not real Xenses attractions. New set: Rehilete (Pinwheel), El Pueblo, Xensatorium, Dwarfs & Giants, Edén, Lodork, Tobogán. Re-anchored to the satellite-located Pinwheel; the old placeholder cluster sat ~200 m NW of the real park center. `closed_days:[0]`. Dec 13 is a Sunday → Xplor and Xenses both closed.
+
+### Evidence and limits
+- Positions: new Xcaret/Xplor/Xenses pins are approximate (`loc:"approx"`, flagged in notes). OSM has almost no Xplor/Xenses geometry; Xcaret OSM has ~18 named attractions (kept), the rest placed by zone. Only the Xenses Rehilete is satellite-located (Esri World Imagery z18, ~20.584652, -87.125831, retrieved 2026-11-05). **No walking paths/routes were added or traced — pins only.**
+- Names/hours from official park pages, blog.xcaret.com and general web (reviewed 2026-11-05). Park-level hours applied; "don't invent hours" respected — unverified items flagged.
+- Venue IDs: existing Xcaret IDs preserved. Some Xenses IDs changed (xs-riviera/xs-lodoxpa/xs-twister replaced by xs-eden/xs-lodork/xs-tobogan + new xs-rehilete/xs-pueblo/xs-dwarfs) because the old names were wrong; no device-local edits existed on park pins, so no migration added. Add one (like apapachoa→cosexa) if park edits appear later.
+
+### Verification / next
+- Verified rendering in the desktop browser pane only (Dave disconnected the Pixel): 5-destination switcher, Xenses pins now over the real structures with correct names, Xcaret 30 pins land on park land (not sea), park-hours/Sunday logic works. Data-only change, JS untouched.
+- Untested: on-device (Pixel) load + offline reload + GPS for the parks — deferred until Dave reconnects.
+- `data/data.json` is network-first, so park edits propagate without a cache bump; the v13 bump also forces a full re-cache on next SW update.
