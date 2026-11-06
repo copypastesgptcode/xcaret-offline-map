@@ -115,7 +115,7 @@ const ArteWalk = (() => {
     }catch{}
     selected=[...walks.keys()].at(-1);
     const pickFile=()=>{if(recording){toast('Finish the current walk first');return;}el('gpxFile').click();};
-    el('arteImport').onclick=el('guideImport').onclick=pickFile;
+    el('arteImport').onclick=pickFile;
     el('gpxFile').onchange=e=>{const file=e.target.files[0];e.target.value='';importFile(file);};
     el('arteRecord').onclick=()=>{
       if(recording){stop();return;}

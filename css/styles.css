@@ -177,3 +177,11 @@ h1{font-size:19px;font-weight:700;margin:0;line-height:1.15;color:var(--text);wh
 .leaflet-tooltip.pinlabel{background:none;border:none;box-shadow:none;padding:0;margin:0;font-family:Figtree,sans-serif}
 .leaflet-tooltip.pinlabel::before{display:none}
 body:not(.labels-on) .leaflet-tooltip.pinlabel{display:none}
+
+#placeMatches{max-height:min(28dvh,220px);overflow:auto;overscroll-behavior:contain;margin-top:6px;padding:4px;color:var(--text-dim);font-size:14px}
+#placeMatches button{display:block;width:100%;min-height:44px;text-align:left;padding:6px 9px;border:0;border-bottom:1px solid var(--line);background:var(--card);color:var(--text);font:600 15px Figtree,sans-serif;cursor:pointer}
+#placeMatches small{display:block;font-weight:400;color:var(--text-dim)}
+.arte .return-guide{width:100%;min-height:44px;border:0;border-radius:12px;background:var(--ink);color:white;text-align:left;padding:9px 14px;font:600 15px Figtree,sans-serif;cursor:pointer}
+
+#closePlace{position:absolute;top:6px;right:10px;min-width:44px;height:44px;border:0;border-radius:12px;background:var(--card-2);color:var(--text);font-size:24px;cursor:pointer}
+.sheetbody h2{padding-right:46px}

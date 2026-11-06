@@ -42,7 +42,6 @@ body:not(.arte) .leaflet-control-scale{display:none}
 #arteGuide form,#arteGuide>div{display:flex;gap:8px;align-items:center;justify-content:space-between}
 #arteGuide h2{margin:0;font-size:20px}
 #arteGuide button{padding:9px 12px;min-height:42px;border:1px solid var(--line);border-radius:10px;font:inherit;color:var(--text);background:var(--card-2)}
-#arteGuide #guideStart{color:white;background:var(--ink)}
 #guideEvidence{color:var(--text-dim);font-size:13px}
 #guideSteps{padding-left:24px} #guideSteps li{padding:3px 0 8px 3px}
 

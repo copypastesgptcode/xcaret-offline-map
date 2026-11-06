@@ -187,11 +187,39 @@ function visibleVenues(){
     return true;
   });
 }
+function clearSearch(){
+  state.q='';
+  document.getElementById('search').value='';
+  document.getElementById('searchClear').hidden=true;
+}
+function renderMatches(venues){
+  const host=document.getElementById('placeMatches');
+  host.replaceChildren();
+  host.hidden=!state.q.trim();
+  if(host.hidden) return;
+  if(!venues.length){
+    const area=state.data.areas.find(a=>a.id===state.area);
+    host.textContent='No matches in '+area.label+(state.openNow || state.active.size!==CAT_ORDER.length?' with these filters.':'.');
+    return;
+  }
+  for(const v of venues){
+    const row=document.createElement('button');
+    row.type='button';
+    row.textContent=v.name_en;
+    const detail=document.createElement('small');
+    detail.textContent=[CATS[v.cat].label,v.casa,v.level].filter(Boolean).join(' · ');
+    row.appendChild(detail);
+    row.onclick=()=>selectVenue(v.id,true);
+    host.appendChild(row);
+  }
+}
 function renderPins(){
   if(pinLayer) pinLayer.remove();
   pinLayer = L.layerGroup().addTo(map);
   const groups=new Map();
-  for(const venue of visibleVenues()){
+  const venues=visibleVenues();
+  renderMatches(venues);
+  for(const venue of venues){
     if(state.area==='arte' && ArteMap.hidePin(venue)) continue;
     const key=state.area==='arte' ? venue.lat+','+venue.lon : venue.id;
     if(!groups.has(key)) groups.set(key,[]);
@@ -253,6 +281,7 @@ function markerFor(id){ let r=null; if(pinLayer) pinLayer.eachLayer(l=>{ if(l._v
 
 /* ---------------- selection + sheet ---------------- */
 function selectVenue(id, pan){
+  if(state.q){clearSearch();document.getElementById('search').blur();}
   state.selected = id; state.editing=false;
   renderPins();
   const v = venueView(state.data.venues.find(x=>x.id===id));
@@ -314,7 +343,7 @@ function openSheet(id){
     ${v.arrivalNote ? '<p class="notes"><strong>My arrival note</strong><br>'+esc(v.arrivalNote)+'</p>' : ''}`;
   const destination = body.querySelector('[data-arte-destination]');
   if(destination) destination.onclick=()=>selectVenue(destination.dataset.arteDestination,true);
-  sheet.classList.add('open'); sheet.setAttribute('aria-hidden','false');
+  sheet.inert=false;sheet.classList.add('open'); sheet.setAttribute('aria-hidden','false');
   document.getElementById('navBtn').onclick=()=>{ state.navTarget=id; updateNavLine(); if(!state.pos) startGPS(false); else toast('Showing straight-line bearing'); openSheet(id); if(state.pos) fitUserAnd(v); };
   document.getElementById('editBtn').onclick=()=>toggleEdit(id);
   if(state.editing) renderEditForm(id);
@@ -325,7 +354,7 @@ function openSheet(id){
     body.querySelector('.badges').after(extra);
   }
 }
-function closeSheet(){ const s=document.getElementById('sheet'); s.classList.remove('open'); s.setAttribute('aria-hidden','true'); state.selected=null; state.editing=false; renderPins(); }
+function closeSheet(){ const s=document.getElementById('sheet'); s.inert=true;s.classList.remove('open'); s.setAttribute('aria-hidden','true'); state.selected=null; state.editing=false; renderPins(); }
 
 /* ---------------- edit ---------------- */
 function toggleEdit(id){
@@ -468,6 +497,7 @@ function buildChips(){
 }
 function switchArea(id){
   ArteWalk.stop();
+  clearSearch();
   state.area=id; state.selected=null; state.navTarget=null;
   closeSheet(); buildSwitcher(); renderBasemap(); renderPins();
   const a=state.data.areas.find(x=>x.id===id);
@@ -544,8 +574,15 @@ async function init(){
   document.getElementById('locateBtn').onclick=()=>startGPS(true);
   const s=document.getElementById('search'), sc=document.getElementById('searchClear');
   s.addEventListener('input', ()=>{ state.q=s.value; sc.hidden=!s.value; renderPins(); });
-  sc.onclick=()=>{ s.value=''; state.q=''; sc.hidden=true; renderPins(); s.focus(); };
+  sc.onclick=()=>{ clearSearch();renderPins();s.focus(); };
+  s.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){clearSearch();renderPins();}
+    if(e.key==='Enter' && state.q.trim()){
+      e.preventDefault();document.querySelector('#placeMatches button')?.click();
+    }
+  });
   document.getElementById('grabber').onclick=closeSheet;
+  document.getElementById('closePlace').onclick=closeSheet;
 
   // start GPS passively (no recenter) so the dot appears when available
   startGPS(false);

@@ -7,7 +7,7 @@ Open the link, add to home screen, and it works with no connection: map, pins, h
 - Custom basemap hand-styled from **OpenStreetMap** data (bundled geometry) — jungle green, sand paths, turquoise water.
 - Category pins (food, bars, pools, restrooms, towels, lockers, shows, transport, attractions, casas, services). Closed places fade to grey.
 - “Open now” uses Cancún time. Places with unknown hours stay out of the filter. Search accepts accented or unaccented names.
-- Import a GPSLogger GPX from **Walks → Import GPX**, give it a name, and view it offline. Track segments and available timestamps are retained. Saved walks stay in the browser where you import them.
+- Import a GPSLogger GPX from **Path view → Import GPX**, give it a name, and view it offline. Track segments and available timestamps are retained. Saved walks stay in the browser where you import them.
 - GPS dot with heading cone; straight-line bearing + distance to a selected place (not turn-by-turn).
 - Bottom sheet: English/Spanish name, open/closed + hours, level badge, distance, "Compass bearing", "Edit pin".
 - **Draggable pins and editable hours**, saved on your device (localStorage).

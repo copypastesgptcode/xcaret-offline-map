@@ -6,6 +6,7 @@ const ArteMap = (() => {
     'arte-mercado-sj': ['Return to the main lobby', 'Look for the elevators beside Mercado, or between Tah-Xido and Chino Poblano. Guests report these connect to the main concierge and resort entrance.', 'arte-lobby'],
     'arte-cosexa': ['Find the guest elevator', 'In Casa de la Paz, confirm the restaurant elevator before going up. The adjacent elevator serves guest rooms.']
   };
+  const returnRoutes={'arte-mercado-sj':'mercado','arte-lobby':'lobby','arte-cayuco':'cayuco','arte-cosexa':'cosexa'};
   let detail, waterLayer, strokes, pathView = false;
   function width(metres, minimum){
     const metresPerPixel = 156543.03392 * Math.cos(20.588 * Math.PI / 180) / 2 ** map.getZoom();
@@ -72,7 +73,7 @@ const ArteMap = (() => {
       el('guideReverse').textContent=reverse?'Show outbound walk':'Show return walk';
       el('guideTitle').textContent=reverse?route.name+' → '+home:home+' → '+route.name;
     }
-    casa.onchange=()=>{reverse=false;try{localStorage.setItem('arte_home_casa',casa.value);}catch{} render();};
+    casa.onchange=()=>{try{localStorage.setItem('arte_home_casa',casa.value);}catch{} render();};
     place.onchange=()=>{reverse=false;render();};
     el('guideReverse').onclick=()=>{reverse=!reverse;render();};
     el('quickWalks').onclick=()=>el('arteGuides').click();
@@ -82,21 +83,24 @@ const ArteMap = (() => {
     };
     el('arteGuides').onclick=()=>{render();dialog.showModal();};
     el('sheetbody').addEventListener('click',e=>{
+      const returning=e.target.closest('[data-return-route]');
+      if(returning){
+        closeSheet();reverse=true;render();place.value=returning.dataset.returnRoute;
+        render();dialog.showModal();return;
+      }
       const button=e.target.closest('[data-walk-casa]');
       if(!button) return;
-      closeSheet();casa.value=button.dataset.walkCasa;casa.onchange();dialog.showModal();
+      closeSheet();reverse=false;casa.value=button.dataset.walkCasa;casa.onchange();dialog.showModal();
     });
-    el('guideStart').onclick=()=>{
-      if(!ArteWalk.start(el('guideTitle').textContent)) return;
-      dialog.close();if(!pathView) el('artePaths').click();
-    };
   }
   function sheet(v){
     const homes={'casa-casamusica':'musica','casa-casapiramide':'piramide'};
     if(homes[v.id]) return '<aside class="arte-directions"><button type="button" data-walk-casa="'+homes[v.id]+'">Walks from this Casa →</button></aside>';
     const n=notes[v.id];
-    if(!n) return '';
-    return `<aside class="arte-directions"><strong>${n[0]}</strong><p>${n[1]}</p><small>Guest-reported landmarks</small>${n[2] ? '<button type="button" data-arte-destination="'+n[2]+'">Show destination ↗</button>' : ''}</aside>`;
+    const route=returnRoutes[v.id];
+    const back=route ? '<button type="button" class="return-guide" data-return-route="'+route+'">Walk back to my Casa →</button>' : '';
+    if(!n) return back;
+    return `<aside class="arte-directions"><strong>${n[0]}</strong><p>${n[1]}</p><small>Guest-reported landmarks</small>${n[2] ? '<button type="button" data-arte-destination="'+n[2]+'">Show destination ↗</button>' : ''}</aside>`+back;
   }
   const order={sea:0,veg:1,beach:2,water:3,waterway:4,coastline:5,parking:6,pitch:7,building:8,roof:9,pool:10};
   function drawWater(renderer,group){
