@@ -4,11 +4,12 @@ A mobile-first, fully-offline replacement map for **Hotel Xcaret Arte**, **Xcare
 Open the link, add to home screen, and it works with no connection: map, pins, hours — everything is cached by a service worker on first load.
 
 ## Features
-- Custom basemap hand-styled from **OpenStreetMap** data (no tile server, no Xcaret artwork) — jungle green, sand paths, turquoise water.
+- Custom basemap hand-styled from **OpenStreetMap** data (bundled geometry) — jungle green, sand paths, turquoise water.
 - Category pins (food, bars, pools, restrooms, towels, lockers, shows, transport, attractions, casas, services). Closed places fade to grey.
-- "Open now" filter, category chips, and search.
+- “Open now” uses Cancún time. Places with unknown hours stay out of the filter. Search accepts accented or unaccented names.
+- Import a GPSLogger GPX from **Walks → Import GPX**, give it a name, and view it offline. Track segments and available timestamps are retained. Saved walks stay in the browser where you import them.
 - GPS dot with heading cone; straight-line bearing + distance to a selected place (not turn-by-turn).
-- Bottom sheet: English/Spanish name, open/closed + hours, level badge, distance, "Point me there", "Edit pin".
+- Bottom sheet: English/Spanish name, open/closed + hours, level badge, distance, "Compass bearing", "Edit pin".
 - **Draggable pins and editable hours**, saved on your device (localStorage).
 - Separate Arte, neighboring México, and park views. Light / dark / high-contrast "sun" themes.
 

@@ -49,18 +49,23 @@ function allVenues(){ return state.data.venues.map(venueView); }
 
 /* ---------------- time / status ---------------- */
 function toMin(hhmm){ const [h,m]=hhmm.split(':').map(Number); return h*60+m; }
-function statusOf(v, now){
-  now = now||new Date();
-  if((v.closed_days||[]).includes(now.getDay())) return {s:'closed', why:'Closed today'};
-  if(!v.hours || !v.hours.length) return {s:'open', why:'No set hours'};
-  const mins = now.getHours()*60+now.getMinutes();
-  for(const w of v.hours){
-    const o=toMin(w.open), c=toMin(w.close);
-    const inside = c>o ? (mins>=o && mins<c) : (mins>=o || mins<c); // handle past-midnight
-    if(inside) return {s:'open', why:w.label};
+const resortClock = new Intl.DateTimeFormat('en-US',{
+  timeZone:'America/Cancun',weekday:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'
+});
+function statusOf(v, now=new Date()){
+  const parts=Object.fromEntries(resortClock.formatToParts(now).map(p=>[p.type,p.value]));
+  const day=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(parts.weekday);
+  const minutes=Number(parts.hour)*60+Number(parts.minute);
+  const closed=v.closed_days||[];
+  for(const w of v.hours||[]){
+    const start=toMin(w.open), end=toMin(w.close);
+    const overnight=end<start;
+    const openingDay=overnight && minutes<end ? (day+6)%7 : day;
+    const inside=start===end || (overnight ? minutes>=start || minutes<end : minutes>=start && minutes<end);
+    if(inside && !closed.includes(openingDay)) return {s:'open',why:w.label};
   }
-  // find next opening today
-  return {s:'closed', why:''};
+  if(closed.includes(day)) return {s:'closed',why:'Closed today'};
+  return {s:v.hours?.length?'closed':'unknown',why:''};
 }
 
 /* ---------------- geo ---------------- */
@@ -143,7 +148,8 @@ function renderBasemap(){
   const feats = state.basemap.features.filter(f=> (f.properties.area===geometryArea || f.properties.area==='other') && (state.area!=='arte' || !ArteMap.replaces(f)));
   const paths = feats.filter(f=> isPath(f.properties.cls));
   const rest  = feats.filter(f=> !isPath(f.properties.cls));
-  if(state.area==='arte') rest.sort((a,b)=>ArteMap.drawOrder(a)-ArteMap.drawOrder(b));
+  const drawOrder=f=>f.properties.cls.startsWith('xpzone-') ? 2.5 : ArteMap.drawOrder(f);
+  rest.sort((a,b)=>drawOrder(a)-drawOrder(b));
   const R = basemapRenderer || (basemapRenderer=L.svg({padding:.4}));
   baseLayer = L.geoJSON({type:'FeatureCollection',features:rest}, {
     style:f=>styleFor(f.properties.cls), interactive:false, renderer:R,
@@ -156,7 +162,7 @@ function renderBasemap(){
   pathLayer.addLayer(L.geoJSON({type:'FeatureCollection',features:paths}, {
     style:f=>pathStyle(f.properties.cls,'top'), interactive:false, renderer:R }));
   if(state.area==='arte') ArteMap.draw(R,pathLayer);
-  if(state.area!=='arte') baseLayer.bringToBack();
+  // Base features were added first; reversing them would paint zone fills over buildings.
   ArteWalk.draw();
 }
 
@@ -170,13 +176,14 @@ function pinIcon(v, sel){
              + `<span>${c.ic}</span>${lvl}</div>`;
   return L.divIcon({html, className:'', iconSize:[34,34], iconAnchor:[8,30], tooltipAnchor:[12,-12]});
 }
+function searchText(value){return value.normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();}
 function visibleVenues(){
-  const q = state.q.trim().toLowerCase();
+  const q = searchText(state.q.trim());
   return allVenues().filter(v=>{
     if(v.area!==state.area) return false;
     if(!state.active.has(v.cat)) return false;
     if(state.openNow && statusOf(v).s!=='open') return false;
-    if(q && ![v.name_en,v.name_es,...(v.aliases||[])].some(name=>name && name.toLowerCase().includes(q))) return false;
+    if(q && ![v.name_en,v.name_es,...(v.aliases||[])].some(name=>name && searchText(name).includes(q))) return false;
     return true;
   });
 }
@@ -256,6 +263,7 @@ function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;
 
 function statusBadge(v){
   const st = statusOf(v);
+  if(st.s==='unknown') return '<span class="badge unknown">Hours unconfirmed</span>';
   if(st.s==='open') return `<span class="badge open">● Open${st.why?' · '+esc(st.why):''}</span>`;
   return `<span class="badge closed">● Closed${st.why?' · '+esc(st.why):''}</span>`;
 }

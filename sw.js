@@ -1,5 +1,5 @@
 /* Xcaret Map service worker — precache everything for full offline use. */
-const CACHE = 'xcaret-map-v14-parks';
+const CACHE = 'xcaret-map-v15-trip';
 const ASSETS = [
   './',
   'index.html',
@@ -45,36 +45,10 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // only our own assets
 
-  // Navigations: serve cached app shell when offline.
-  if (req.mode === 'navigate') {
-    e.respondWith(
-      fetch(req).catch(() => caches.match('index.html').then((r) => r || caches.match('./')))
-    );
-    return;
-  }
-
-  // Data files: network-first so edits propagate when online; fall back to cache offline.
-  if (/\/data\/.*\.(json|geojson)$/.test(url.pathname)) {
-    e.respondWith(
-      fetch(req).then((res) => {
-        if (res && res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
-        return res;
-      }).catch(() => caches.match(req))
-    );
-    return;
-  }
-
-  // Everything else: cache-first, fall back to network, then cache the result.
-  e.respondWith(
-    caches.match(req).then((hit) => {
-      if (hit) return hit;
-      return fetch(req).then((res) => {
-        if (res && res.ok && res.type === 'basic') {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy));
-        }
-        return res;
-      }).catch(() => hit);
-    })
-  );
+  // Keep the page and scripts on the same installed release during an update.
+  const asset=req.mode==='navigate' ? new URL('index.html',self.registration.scope).href : req.url;
+  e.respondWith(caches.open(CACHE).then(async cache=>{
+    const saved=await cache.match(asset);
+    return saved || fetch(req);
+  }));
 });

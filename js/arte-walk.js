@@ -64,11 +64,48 @@ const ArteWalk = (() => {
     const a=document.createElement('a');a.href=url;a.download=(walk.name.replace(/[^\p{L}\p{N}]+/gu,'-').slice(0,90)||'arte-walk')+'-'+walk.id.slice(0,8)+'.gpx';a.click();
     setTimeout(()=>URL.revokeObjectURL(url),30000);
   }
+  function validCoordinate(p){
+    return Array.isArray(p) && Number.isFinite(p[0]) && Math.abs(p[0])<=90 &&
+      Number.isFinite(p[1]) && Math.abs(p[1])<=180;
+  }
+  async function importFile(file){
+    if(!file || recording) return;
+    if(file.size>10*1024*1024){toast('Choose a GPX file smaller than 10 MB.');return;}
+    try{
+      const xml=new DOMParser().parseFromString(await file.text(),'application/xml');
+      if(xml.documentElement.localName!=='gpx' || xml.querySelector('parsererror')) throw Error();
+      const segments=[];
+      for(const trackSegment of xml.getElementsByTagNameNS('*','trkseg')){
+        let points=[];
+        for(const node of trackSegment.children){
+          if(node.localName!=='trkpt') continue;
+          const coordinate=key=>node.getAttribute(key)?.trim() ? Number(node.getAttribute(key)) : NaN;
+          const p=[coordinate('lat'),coordinate('lon')];
+          if(!validCoordinate(p)){points=[];continue;}
+          const time=Date.parse(node.getElementsByTagNameNS('*','time')[0]?.textContent);
+          if(Number.isFinite(time)) p.push(time);
+          if(!points.length) segments.push(points);
+          points.push(p);
+        }
+      }
+      if(!segments.length) throw Error();
+      const suggested=xml.querySelector('trk > name')?.textContent?.trim() || file.name.replace(/\.gpx$/i,'');
+      const name=prompt('Save imported walk as',suggested);
+      if(!name?.trim() || recording) return;
+      const walk={id:crypto.randomUUID(),name:name.trim().slice(0,130),segments};
+      walks.set(walk.id,walk);selected=walk.id;
+      const saved=persist(walk);
+      if(el('arteGuide').open) el('arteGuide').close();
+      if(el('arteKey').hidden) el('artePaths').click();
+      draw();el('arteSaved').onchange();
+      if(saved) toast('Walk imported and saved on this device');
+    }catch{toast('Could not import a GPX track. Choose a file containing track points.',4500);}
+  }
   function init(){
     try{
       for(const key of Object.keys(localStorage).filter(k=>k.startsWith(prefix))){
         const w=JSON.parse(localStorage.getItem(key));
-        if(w && prefix+w.id===key && typeof w.name==='string' && w.segments?.length && w.segments.every(s=>s.length && s.every(usable))) walks.set(w.id,w);
+        if(w && prefix+w.id===key && typeof w.name==='string' && w.segments?.length && w.segments.every(s=>s.length && s.every(validCoordinate))) walks.set(w.id,w);
       }
       const segments=JSON.parse(localStorage.getItem(legacy)||'[]');
       if(segments.length && segments.every(s=>s.length && s.every(usable))){
@@ -77,6 +114,9 @@ const ArteWalk = (() => {
       }
     }catch{}
     selected=[...walks.keys()].at(-1);
+    const pickFile=()=>{if(recording){toast('Finish the current walk first');return;}el('gpxFile').click();};
+    el('arteImport').onclick=el('guideImport').onclick=pickFile;
+    el('gpxFile').onchange=e=>{const file=e.target.files[0];e.target.value='';importFile(file);};
     el('arteRecord').onclick=()=>{
       if(recording){stop();return;}
       const name=prompt('Name this walk (start → destination)','');

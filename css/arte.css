@@ -16,7 +16,7 @@ body.arte{--arte-service:#706956;--ink:#562557;--jungle:#b8c5a8;--building:#f4e9
 #arteKey span{display:flex;align-items:center;gap:9px;margin:4px 0}
 #arteKey i{width:26px;height:0;border-top:4px solid var(--water-deep)}
 #arteKey .walk{height:5px;border:1px solid var(--path-casing);background:var(--path)}
-#arteGuides,#arteRecord,#arteExport,#arteForget{display:inline-block;text-align:left;min-height:40px;padding:4px 6px;background:transparent;border:0;color:var(--text);text-decoration:underline;font:inherit;cursor:pointer}
+#arteGuides,#arteImport,#arteRecord,#arteExport,#arteForget{display:inline-block;text-align:left;min-height:40px;padding:4px 6px;background:transparent;border:0;color:var(--text);text-decoration:underline;font:inherit;cursor:pointer}
 #arteKey .steps{border-color:var(--arte-step);border-top-style:dashed}
 #arteKey .possible{border-color:var(--arte-crossing);border-top-style:dotted}
 .arte-directions{border-left:3px solid #993975;padding:7px 12px;margin:12px 0;background:var(--card-2);border-radius:0 8px 8px 0}
